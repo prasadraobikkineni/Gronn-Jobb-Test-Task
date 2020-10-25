@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: Task
+  jackson:
+    serialization:
+      write-dates-as-timestamps: true
+  main:
+    allow-bean-definition-overriding: true
+
+logging.facility: Task
+
+management:
+  metrics:
+    tags.application: ${spring.application.name}
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+info:
+  name: ${spring.application.name}
+  environment: ${spring.profiles.active}
+
+
+elasticsearch:
+  urls: localhost
+  port: 9200
+  businessCardIndex: business_card
+
+indexable: true

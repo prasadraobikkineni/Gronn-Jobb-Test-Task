@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}/}spring.log}"/>
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%X{correlationId}){faint} %clr(---){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wex"/>
+    <springProperty name="APP_NAME" source="spring.application.name" defaultValue="UNKNOWN_APPLICATION"/>
+    <springProperty name="SPRING_PROFILES_ACTIVE" source="spring.profiles.active"/>
+    <springProperty name="FACILITY" source="logging.facility" defaultValue="unknownFacilityValue"/>
+    <springProfile name="default">
+        <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+        <logger name="com.example" level="DEBUG"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <appender name="GELF" class="de.siegmar.logbackgelf.GelfUdpAppender">
+            <graylogHost>localhost</graylogHost>
+            <graylogPort>5555</graylogPort>
+            <encoder class="de.siegmar.logbackgelf.GelfEncoder">
+                <includeLevelName>true</includeLevelName>
+                <fullPatternLayout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>${FILE_LOG_PATTERN}</pattern>
+                </fullPatternLayout>
+                <staticField>app_name:${APP_NAME}</staticField>
+                <staticField>spring_profiles_active:${SPRING_PROFILES_ACTIVE}</staticField>
+                <staticField>facility:${FACILITY}</staticField>
+            </encoder>
+        </appender>
+        <appender name="ASYNC_GELF" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>1024</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <appender-ref ref="GELF"/>
+        </appender>
+        <logger name="com.example" level="DEBUG"/>
+        <logger name="org.springframework" level="INFO"/>
+        <root level="ERROR">
+            <appender-ref ref="ASYNC_GELF"/>
+        </root>
+    </springProfile>
+
+</configuration>

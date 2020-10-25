@@ -1,0 +1,111 @@
+{
+  "index_patterns": [
+    "business_card*"
+  ],
+  "version": 2,
+  "settings": {
+    "index": {
+      "number_of_shards": "3",
+      "number_of_replicas": "1",
+      "refresh_interval": "30s",
+      "max_terms_count": "1000",
+      "max_result_window": 1000000
+    },
+    "analysis": {
+      "filter": {
+        "my_ascii_folding": {
+          "type": "asciifolding",
+          "preserve_original": true
+        }
+      },
+      "analyzer": {
+        "business_card_analyzer": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "my_ascii_folding"
+          ]
+        }
+      },
+      "tokenizer": {
+        "autocomplete": {
+          "type": "edge_ngram",
+          "min_gram": 3,
+          "max_gram": 30,
+          "token_chars": [
+            "letter",
+            "digit",
+            "whitespace"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "_source": {
+      "enabled": true
+    },
+    "properties": {
+      "businessCardId": {
+        "type": "keyword"
+      },
+      "_class": {
+        "type": "keyword"
+      },
+      "participant": {
+        "properties": {
+          "scheme": {
+            "type": "keyword",
+            "index": false
+          },
+          "value": {
+            "type": "keyword"
+          }
+        }
+      },
+      "entity": {
+        "properties": {
+          "countryCode": {
+            "type": "keyword",
+            "index": false
+          },
+          "name": {
+            "properties": {
+              "name": {
+                "type": "text",
+                "analyzer": "business_card_analyzer"
+              },
+              "language": {
+                "type": "keyword",
+                "index": false
+              }
+            }
+          },
+          "regDate": {
+            "type": "long",
+            "index": false
+          }
+        }
+      },
+      "docTypeId": {
+        "properties": {
+          "scheme": {
+            "type": "keyword",
+            "index": false
+          },
+          "value": {
+            "type": "keyword",
+            "index": false
+          },
+          "displayName": {
+            "type": "keyword",
+            "index": false
+          },
+          "deprecated": {
+            "type": "keyword",
+            "index": false
+          }
+        }
+      }
+    }
+  }
+}
